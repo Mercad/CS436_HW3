@@ -5,6 +5,20 @@ using namespace std;
 
 // An unsigned char can store 1 Bytes (8bits) of data (0-255)
 typedef unsigned char BYTE;
+typedef unsigned int TWOBYTES;
+typedef unsigned long FOURBYTES;
+
+
+unsigned int twobytes(BYTE bytes[]);
+unsigned long fourbytes(BYTE bytes[]);
+unsigned int fourbits(BYTE byte);
+unsigned int onebit(BYTE byte);
+
+//TODO define all the contents of a tcpHeader and store it
+struct tcpHeader
+{
+	TWOBYTES srcPort;
+} header; //this is an instantiation of tcpHeader type
 
 // Get the size of a file
 long getFileSize(FILE *file)
@@ -31,7 +45,7 @@ int main()
         return -1;
     }
     else
-        cout << "File opened successfully" << endl;
+        cout << "File contents:" << endl;
 
     // Get the size of the file in bytes
     long fileSize = getFileSize(file);
@@ -52,11 +66,42 @@ int main()
     		printf("%02X ", fileBuf[i]);
     }
 
-    //example bit mask: get the first 4 bits of the first byte
-    BYTE test = fileBuf[0] & 0xF0;
-    printf("\nsample bit mask as int:%d", test);
+
+    //TWOBYTES srcPort =  twobytes(&fileBuf[0]);
+    header.srcPort = twobytes(&fileBuf[0]);
+    printf("\nSource Port: %d", header.srcPort);
+    //TWOBYTES destPort =  twobytes(&fileBuf[2]);
+    printf("\nDestination Port: %d", twobytes(&fileBuf[2]));
+
+
+    //example combination: 32 bits of the file
+    //FOURBYTES seqNum = fourbytes(&fileBuf[4]);
+    printf("\nSequence Number: %lu", fourbytes(&fileBuf[4]));
+
+    //FOURBYTES ackNum = fourbytes(&fileBuf[8]);
+    printf("\nAcknowledgement Number: %lu", fourbytes(&fileBuf[8]));
 
     delete[]fileBuf;
     fclose(file);
     return 0;
+}
+
+unsigned int twobytes(BYTE bytes[])
+{
+	return((bytes[0] << 8) + bytes[1]);
+}
+
+unsigned long fourbytes(BYTE bytes[])
+{
+	return((bytes[0] << 24) + (bytes[1] << 16) + (bytes[2] << 8) + bytes[3]);
+}
+
+unsigned int fourbits(BYTE byte)
+{
+	return(byte >> 4);
+}
+
+unsigned int onebit(BYTE byte)
+{
+	return(byte >> 7);
 }
