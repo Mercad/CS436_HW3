@@ -1,0 +1,15 @@
+#include <iostream>
+#include <fstream>
+
+using namespace std;
+
+int main()
+{
+	ifstream inFile;
+
+	int x;
+	inFile.read(&x, 4);
+	cout << hex << x;
+
+	return 0;
+}

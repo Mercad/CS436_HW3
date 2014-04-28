@@ -1,0 +1,41 @@
+#include <iostream>
+#include <fstream>
+
+using namespace std;
+int ReadU16(istream& file);
+int ReadU32(istream& file);
+
+int main()
+{
+
+	ifstream inFile;
+	inFile.open("sampleTcpDump.dat", ios::in|ios::binary|ios::ate);
+
+	int bytes;
+	bytes = ReadU16(inFile);
+	cout << bytes;
+
+	return 0;
+}
+
+int ReadU16(istream& file)
+{
+  int val;
+  short bytes[2];
+
+  file.read( (char*)bytes, 2 );  // read 2 bytes from the file
+  val = bytes[0] | (bytes[1] << 8);  // construct the 16-bit value from those bytes
+
+  return val;
+}
+
+int ReadU32(istream& file)
+{
+  int val;
+  short bytes[2];
+
+  file.read( (char*)bytes, 4 );  // read 2 bytes from the file
+  val = bytes[0] | (bytes[1] << 8);  // construct the 16-bit value from those bytes
+
+  return val;
+}

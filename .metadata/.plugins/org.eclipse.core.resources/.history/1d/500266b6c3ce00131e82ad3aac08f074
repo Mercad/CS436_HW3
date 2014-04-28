@@ -1,0 +1,16 @@
+#include <iostream>
+#include <fstream>
+
+using namespace std;
+
+int main()
+{
+
+	ifstream inFile;
+	inFile.open("sampleTcpDump.dat", ios::in|ios::binary|ios::ate);
+
+	int x = inFile.get();
+
+	return 0;
+}
+

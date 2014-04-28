@@ -1,0 +1,15 @@
+#include <iostream>
+#include <fstream>
+
+using namespace std;
+
+int main()
+{
+	ifstream inFile;
+
+	char x;
+	inFile.read(&x, 4);
+	cout << x;
+
+	return 0;
+}
