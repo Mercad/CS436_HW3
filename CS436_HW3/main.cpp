@@ -7,17 +7,36 @@ using namespace std;
 typedef unsigned char BYTE;
 typedef unsigned int TWOBYTES;
 typedef unsigned long FOURBYTES;
+typedef bool FLAG;
+const int HIBIT = 1;
+const int LOBIT = 0;
 
 
 unsigned int twobytes(BYTE bytes[]);
 unsigned long fourbytes(BYTE bytes[]);
-unsigned int fourbits(BYTE byte);
-unsigned int onebit(BYTE byte);
+unsigned int fourbits(BYTE byte, bool hiNib);
+bool onebit(BYTE byte, int offset);
 
 //TODO define all the contents of a tcpHeader and store it
 struct tcpHeader
 {
 	TWOBYTES srcPort;
+	TWOBYTES desPort;
+	FOURBYTES seqNum;
+	FOURBYTES ackNum;
+	unsigned short dataOffset;
+	unsigned short reserved;
+	FLAG CWR;
+	FLAG ECE;
+	FLAG URG;
+	FLAG ACK;
+	FLAG PSH;
+	FLAG RST;
+	FLAG SYN;
+	FLAG FIN;
+	TWOBYTES window;
+	TWOBYTES checksum;
+	TWOBYTES urgentPtr;
 } header; //this is an instantiation of tcpHeader type
 
 // Get the size of a file
@@ -67,19 +86,49 @@ int main()
     }
 
 
-    //TWOBYTES srcPort =  twobytes(&fileBuf[0]);
     header.srcPort = twobytes(&fileBuf[0]);
     printf("\nSource Port: %d", header.srcPort);
-    //TWOBYTES destPort =  twobytes(&fileBuf[2]);
-    printf("\nDestination Port: %d", twobytes(&fileBuf[2]));
 
+    header.desPort = twobytes(&fileBuf[2]);
+    printf("\nDestination Port: %d", header.desPort);
 
-    //example combination: 32 bits of the file
-    //FOURBYTES seqNum = fourbytes(&fileBuf[4]);
-    printf("\nSequence Number: %lu", fourbytes(&fileBuf[4]));
+    header.seqNum = fourbytes(&fileBuf[4]);
+    printf("\nSequence Number: %lu", header.seqNum);
 
-    //FOURBYTES ackNum = fourbytes(&fileBuf[8]);
-    printf("\nAcknowledgement Number: %lu", fourbytes(&fileBuf[8]));
+    header.ackNum = fourbytes(&fileBuf[8]);
+    printf("\nAcknowledgement Number: %lu", header.ackNum);
+
+    header.dataOffset = fourbits(fileBuf[12], HIBIT);
+    printf("\nData Offset: %d", header.dataOffset);
+
+    header.reserved = fourbits(fileBuf[12], LOBIT);
+    printf("\nReserved: %d", header.reserved);
+
+    header.CWR = onebit(fileBuf[13], 7);
+	header.ECE = onebit(fileBuf[13], 6);
+	header.URG = onebit(fileBuf[13], 5);
+	header.ACK = onebit(fileBuf[13], 4);
+	header.PSH = onebit(fileBuf[13], 3);
+	header.RST = onebit(fileBuf[13], 2);
+	header.SYN = onebit(fileBuf[13], 1);
+	header.FIN = onebit(fileBuf[13], 0);
+    printf("\nFLAGS\n------------\n"
+    		"CWR:%d\n"
+    		"ECE:%d\n"
+    		"ACK:%d\n"
+    		"URG:%d\n"
+    		"PSH:%d\n"
+    		"RST:%d\n"
+    		"SYN:%d\n"
+    		"FIN:%d\n------------", header.CWR, header.ECE, header.URG, header.ACK, header.PSH, header.RST,
+    		header.SYN, header.FIN);
+
+    header.window = twobytes(&fileBuf[14]);
+    printf("\nWindow: %d", header.window);
+    header.checksum = twobytes(&fileBuf[16]);
+    printf("\nCheck Sum: %d", header.checksum);
+    header.urgentPtr = twobytes(&fileBuf[18]);
+    printf("\nUrgent Pointer: %d", header.urgentPtr);
 
     delete[]fileBuf;
     fclose(file);
@@ -96,12 +145,17 @@ unsigned long fourbytes(BYTE bytes[])
 	return((bytes[0] << 24) + (bytes[1] << 16) + (bytes[2] << 8) + bytes[3]);
 }
 
-unsigned int fourbits(BYTE byte)
+unsigned int fourbits(BYTE byte, bool bitSide)
 {
-	return(byte >> 4);
+	if(bitSide)
+	{
+		return((byte & 0xf0) >> 4);
+	}
+	return( byte & 0x0f);
 }
 
-unsigned int onebit(BYTE byte)
+
+bool onebit(BYTE byte, int offset)
 {
-	return(byte >> 7);
+	return( (1 << offset) & byte );
 }
